@@ -1,8 +1,9 @@
-import { Controller, Post, Body, UseFilters, HttpException, HttpStatus } from '@nestjs/common'
+import { Controller, Post, Body, Res, UseFilters, HttpException, HttpStatus } from '@nestjs/common'
 import { AuthService } from './auth.service'
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { HttpExceptionFilter } from 'src/response/http-exception.filter';
+import { ForgotPasswordDto } from './dto/forgot-password.dto'
+import { ResetPasswordDto } from './dto/reset-password.dto'
+import { HttpExceptionFilter } from 'src/response/http-exception.filter'
+import { Response } from 'express'
 
 @Controller('auth')
 export class AuthController {
@@ -29,7 +30,29 @@ export class AuthController {
       }
 
     @Post('signin')
-      async signIn(@Body() body: { email: string; password: string }) {
+      async signIn(
+        @Body() body: { email: string; password: string },
+        @Res({ passthrough: true }) response: Response
+    ) {
+      const { access_token } = await this.authService.signIn(body.email, body.password)
+      
+      response.cookie('access_token', access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'development',
+        sameSite: 'strict',
+        maxAge: 3600000, // 1 ساعت
+        path: '/',
+      });
+      
+      // If you have a refresh token, handle it here. Otherwise, remove this block.
+      // response.cookie('refresh_token', refresh_token, {
+      //   httpOnly: true,
+      //   secure: process.env.NODE_ENV === 'production',
+      //   sameSite: 'strict',
+      //   maxAge: 86400000 * 7, // 7 روز
+      //   path: '/auth/refresh',
+      // })
+
         return this.authService.signIn(body.email, body.password);
       }
     
