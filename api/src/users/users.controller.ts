@@ -6,12 +6,9 @@ import { CreateUserDto } from './userDto';
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
-    @Post('register')
+    @Post()
     async create(@Body() createUserDto: CreateUserDto ) {
-        const user = await this.usersService.create(createUserDto);
-        return {
-          message: `کاربر ${createUserDto.name} با موفقیت ایجاد شد`
-        }
+        return await this.usersService.create(createUserDto)
     }
 
     @Get(':id')

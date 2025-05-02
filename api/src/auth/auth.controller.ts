@@ -1,15 +1,31 @@
-import { Controller, Post, Body } from '@nestjs/common'
+import { Controller, Post, Body, UseFilters, HttpException, HttpStatus } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { HttpExceptionFilter } from 'src/response/http-exception.filter';
 
 @Controller('auth')
 export class AuthController {
    constructor(private readonly authService: AuthService) {}
 
     @Post('signup')
+    @UseFilters(new HttpExceptionFilter())
       async signUp(@Body() createUserDto: any) {
-        return this.authService.signUp(createUserDto)
+
+        try {
+        const user = await this.authService.signUp(createUserDto);
+        return {
+          success: true,
+          message: 'ثبت نام موفقیت آمیز بود',
+          data: user
+        }
+      } catch(error) {
+        throw new HttpException({
+          status: HttpStatus.CONFLICT, // کد 409
+          error: 'ایمیل از قبل وجود دارد',
+          message: 'این ایمیل قبلا ثبت شده است',
+        }, HttpStatus.CONFLICT);
+      }
       }
 
     @Post('signin')
@@ -29,3 +45,4 @@ export class AuthController {
         return { message: 'رمز عبور با موفقیت تغییر یافت' };
       }
 }
+

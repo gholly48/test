@@ -8,6 +8,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 
 @Injectable()
 export class AuthService {
+  [x: string]: any
     constructor(
         private readonly usersService: UsersService,
         private readonly jwtService: JwtService,
@@ -16,12 +17,13 @@ export class AuthService {
     ) {}
     
 async signUp(createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto)
+  return await this.usersService.create(createUserDto)
+
 }
 
 async signIn(email: string, password: string): Promise<{ access_token: string }> {
     const user = await this.usersService.findByEmail(email);
-    if (!user || !(await bcrypt.compareSync(password, user.password))) {
+    if (!user || !( bcrypt.compareSync(password, user.password ))) {
       throw new UnauthorizedException('Invalid credentials');
     }
     const payload = { sub: user.id, email: user.email };
