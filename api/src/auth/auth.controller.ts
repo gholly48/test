@@ -29,31 +29,36 @@ export class AuthController {
       }
       }
 
-    @Post('signin')
+      @Post('signin')
       async signIn(
         @Body() body: { email: string; password: string },
         @Res({ passthrough: true }) response: Response
-    ) {
-      const { access_token } = await this.authService.signIn(body.email, body.password)
+      ) { 
+        try {
+          const { access_token } = await this.authService.signIn(body.email, body.password);
+          
+          response.cookie('access_token', access_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // در production باید true باشد
+            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+            maxAge: 3600000, // 1 ساعت
+            path: '/',
+          })
+           
+          return { 
+            success: true,
+            message: 'ورود با موفقیت انجام شد',
+            access_token // اختیاری: اگر می‌خوای توکن رو در پاسخ هم بفرستی
+          }
       
-      response.cookie('access_token', access_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'development',
-        sameSite: 'strict',
-        maxAge: 3600000, // 1 ساعت
-        path: '/',
-      });
-      
-      // If you have a refresh token, handle it here. Otherwise, remove this block.
-      // response.cookie('refresh_token', refresh_token, {
-      //   httpOnly: true,
-      //   secure: process.env.NODE_ENV === 'production',
-      //   sameSite: 'strict',
-      //   maxAge: 86400000 * 7, // 7 روز
-      //   path: '/auth/refresh',
-      // })
-
-        return this.authService.signIn(body.email, body.password);
+        } catch(error) {
+          // خطاهای مناسب برای ورود (مثلاً ایمیل/رمز اشتباه)
+          throw new HttpException({
+            status: HttpStatus.UNAUTHORIZED, // کد 401
+            error: 'ورود ناموفق',
+            message: 'ایمیل یا رمز عبور اشتباه است',
+          }, HttpStatus.UNAUTHORIZED)
+        }  
       }
     
     @Post('forgot-password')
