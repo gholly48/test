@@ -2,7 +2,7 @@ import { Controller, Post, Body, Res, UseFilters, HttpException, HttpStatus } fr
 import { AuthService } from './auth.service'
 import { ForgotPasswordDto } from './dto/forgot-password.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
-import { HttpExceptionFilter } from 'src/response/http-exception.filter'
+import { HttpExceptionFilter } from './http-exception.filter'
 import { Response } from 'express'
 
 @Controller('auth')
@@ -73,4 +73,3 @@ export class AuthController {
         return { message: 'رمز عبور با موفقیت تغییر یافت' };
       }
 }
-
