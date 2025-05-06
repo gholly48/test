@@ -1,7 +1,11 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import {  signInStart, signInSuccess, signInFailure  } from '../redux/user/userSlice'
+import { 
+  signInStart, 
+  signInSuccess, 
+  signInFailure,
+  clearError } from '../redux/user/userSlice'
 
 export default function Signin() {
   const [formData, setFormData] = useState({})
@@ -20,6 +24,7 @@ export default function Signin() {
     e.preventDefault()
 
     try {
+      dispatch(clearError())
       dispatch(signInStart())
        const res = await fetch('http://localhost:3000/auth/signin', {
         credentials: 'include',
@@ -31,15 +36,17 @@ export default function Signin() {
       })
  
     const data = await res.json()
-    if (data.success === false) {
-      dispatch(signInFailure(data.message))
-      return
+    console.log(data)
+    if (!res.ok) {
+      // خطا از سرور (مثل 401 یا 400)
+      dispatch(signInFailure(data.message || 'مشکلی در ورود پیش آمد'));
+      return;
     }
 
     dispatch(signInSuccess(data))
       navigate('/')
   } catch (error) {
-    dispatch(signInFailure(data.message))
+    dispatch(signInFailure(error.message || 'مشکلی در اتصال به سرور پیش آمد'))
   }
 }
 
