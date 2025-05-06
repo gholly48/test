@@ -39,7 +39,7 @@ export default function Signin() {
     console.log(data)
     if (!res.ok) {
       // خطا از سرور (مثل 401 یا 400)
-      dispatch(signInFailure(data.message || 'مشکلی در ورود پیش آمد'));
+      dispatch(signInFailure(data.message || 'مشکلی در ورود پیش آمد'))
       return;
     }
 
